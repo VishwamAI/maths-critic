@@ -1,36 +1,43 @@
 import random
-import sympy as sp
+from nextgenjax import NextGenJAX
+
+def initialize_nextgenjax_model():
+    """
+    Initialize and return the NextGenJAX model.
+    """
+    # TODO: Replace with actual NextGenJAX initialization
+    return NextGenJAX()
+
+model = initialize_nextgenjax_model()
 
 def generate_algebra_problem():
     """
-    Generates a simple algebraic problem of the form ax + b = c.
-    Returns the problem as a string and the solution as a sympy expression.
+    Generates a simple algebraic problem of the form ax + b = c using NextGenJAX.
+    Returns the problem as a string and the solution.
     """
     a = random.randint(1, 10)
     b = random.randint(1, 10)
     c = random.randint(1, 10)
 
-    x = sp.symbols('x')
-    problem = sp.Eq(a * x + b, c)
-    solution = sp.solve(problem, x)
+    problem = f"{a}x + {b} = {c}"
+    solution = model.solve_algebra(problem)
 
     return problem, solution
 
 def generate_calculus_problem():
     """
-    Generates a simple calculus problem of the form f(x) = integral(g(x)).
-    Returns the problem as a string and the solution as a sympy expression.
+    Generates a simple calculus problem of the form f(x) = integral(g(x)) using NextGenJAX.
+    Returns the problem as a string and the solution.
     """
     a = random.randint(1, 10)
     b = random.randint(1, 10)
     c = random.randint(1, 10)
 
-    x = sp.symbols('x')
-    g = a * x**2 + b * x + c
-    f = sp.integrate(g, x)
-    problem = sp.Eq(sp.Function('f')(x), f)
+    g = f"{a}x^2 + {b}x + {c}"
+    problem = f"f(x) = integral({g})"
+    solution = model.solve_calculus(problem)
 
-    return problem, f
+    return problem, solution
 
 if __name__ == "__main__":
     algebra_problem, algebra_solution = generate_algebra_problem()
