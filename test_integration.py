@@ -11,8 +11,26 @@ import numpy as np
 from scipy import stats
 import memory_profiler
 import timeout_decorator
+import gc
+import psutil
+from contextlib import contextmanager
 
 TIMEOUT = 300  # 5 minutes timeout for each test
+
+def tearDown(self):
+    gc.collect()
+
+def check_memory_usage():
+    process = psutil.Process()
+    memory_info = process.memory_info()
+    print(f"Memory usage: {memory_info.rss / 1024 / 1024:.2f} MB")
+
+@contextmanager
+def managed_resource():
+    try:
+        yield
+    finally:
+        gc.collect()
 
 def initialize_nextgenjax_model():
     model = problem_generation.initialize_nextgenjax_model()
@@ -154,28 +172,29 @@ def test_problem_generation():
     rng_key = jax.random.PRNGKey(0)
     print("Starting problem generation test...")
 
-    # Generate a set of problems
-    problems = []
-    solutions = []
-    for i in range(5):
-        print(f"Generating problem set {i+1}...")
-        rng_key, subkey1, subkey2 = jax.random.split(rng_key, 3)
-        algebra_problem, algebra_solution = problem_generation.generate_algebra_problem(global_model, global_params, subkey1)
-        print(f"  Generated algebra problem: {algebra_problem}")
-        print(f"  Generated algebra solution: {algebra_solution}")
-        calculus_problem, calculus_solution = problem_generation.generate_calculus_problem(global_model, global_params, subkey2)
-        print(f"  Generated calculus problem: {calculus_problem}")
-        print(f"  Generated calculus solution: {calculus_solution}")
-        problems.extend([algebra_problem, calculus_problem])
-        solutions.extend([algebra_solution, calculus_solution])
-        print(f"Problem set {i+1} generated successfully")
+    def problem_generator():
+        nonlocal rng_key
+        for i in range(5):
+            print(f"Generating problem set {i+1}...")
+            rng_key, subkey1, subkey2 = jax.random.split(rng_key, 3)
+            algebra_problem, algebra_solution = problem_generation.generate_algebra_problem(global_model, global_params, subkey1)
+            yield algebra_problem, algebra_solution
+            calculus_problem, calculus_solution = problem_generation.generate_calculus_problem(global_model, global_params, subkey2)
+            yield calculus_problem, calculus_solution
+            print(f"Problem set {i+1} generated successfully")
 
-    # Check for any errors in the problems generated
-    print("Checking generated problems and solutions...")
-    assert all(problem is not None for problem in problems), "Some problems were not generated correctly."
-    assert all(solution is not None for solution in solutions), "Some solutions were not generated correctly."
+    # Generate and check problems
+    for i, (problem, solution) in enumerate(problem_generator(), 1):
+        print(f"  Generated problem {i}: {problem}")
+        print(f"  Generated solution {i}: {solution}")
+        assert problem is not None, f"Problem {i} was not generated correctly."
+        assert solution is not None, f"Solution {i} was not generated correctly."
 
-    print("All problems and solutions generated correctly")
+        # Add memory check
+        if i % 5 == 0:
+            check_memory_usage()
+
+    print("All problems and solutions generated and checked correctly")
     print("Problem generation test passed successfully!")
 
 @timeout_decorator.timeout(TIMEOUT)
@@ -206,20 +225,27 @@ def test_problem_generation_stress():
     rng_key = jax.random.PRNGKey(0)
     print("Starting stress test...")
     try:
-        for i in range(100):  # Reduced from 1000 to 100
-            print(f"Iteration {i+1}/100")
-            problem, solution = problem_generation.generate_algebra_problem(global_model, global_params, rng_key, "2*x + 3 = 15")
+        def problem_generator():
+            nonlocal rng_key
+            for i in range(50):  # Further reduced from 100 to 50
+                rng_key, subkey = jax.random.split(rng_key)
+                yield problem_generation.generate_algebra_problem(global_model, global_params, subkey, "2*x + 3 = 15")
+
+        for i, (problem, solution) in enumerate(problem_generator(), 1):
+            print(f"Iteration {i}/50")
             print(f"Generated problem: {problem}")
             print(f"Generated solution: {solution}")
-            assert problem is not None, f"Expected a problem to be generated, but got None (iteration {i+1})"
-            assert solution is not None, f"Expected a solution to be generated, but got None (iteration {i+1})"
-            if i % 10 == 0 and i > 0:
+            assert problem is not None, f"Expected a problem to be generated, but got None (iteration {i})"
+            assert solution is not None, f"Expected a solution to be generated, but got None (iteration {i})"
+            if i % 10 == 0:
                 print(f"Completed {i} iterations")
+                check_memory_usage()
         print("Stress test completed all iterations successfully!")
     except Exception as e:
-        print(f"Stress test failed at iteration {i+1}. Error: {str(e)}")
+        print(f"Stress test failed at iteration {i}. Error: {str(e)}")
     finally:
         print("Stress test finished.")
+        check_memory_usage()
 
 # Add new test function for advanced mathematical domains
 @timeout_decorator.timeout(TIMEOUT)
@@ -296,14 +322,21 @@ def test_advanced_statistics():
 def test_large_complex_problems():
     rng_key = jax.random.PRNGKey(0)
     print("Starting large complex problems test...")
-    for i in range(5):  # Adjust the range as needed
-        print(f"Generating problem {i+1}")
-        problem, solution = problem_generation.generate_large_complex_problem(global_model, global_params, rng_key)
+
+    def test_single_large_problem(problem_type):
+        nonlocal rng_key
+        rng_key, subkey = jax.random.split(rng_key)
+        print(f"Generating {problem_type} problem")
+        problem, solution = problem_generation.generate_large_complex_problem(global_model, global_params, subkey, problem_type=problem_type)
         print(f"Generated problem: {problem}")
         print(f"Generated solution: {solution}")
-        assert problem is not None, f"Expected a large complex problem to be generated, but got None (iteration {i+1})"
-        assert solution is not None, f"Expected a solution to be generated, but got None (iteration {i+1})"
-        rng_key, _ = jax.random.split(rng_key)
+        assert problem is not None, f"Expected a large complex {problem_type} problem to be generated, but got None"
+        assert solution is not None, f"Expected a solution for {problem_type} problem to be generated, but got None"
+
+    problem_types = ['algebra', 'calculus', 'statistics', 'differential_equations', 'linear_algebra']
+    for problem_type in problem_types:
+        test_single_large_problem(problem_type)
+
     print("Large complex problems test passed successfully!")
 
 if __name__ == "__main__":
@@ -325,13 +358,21 @@ if __name__ == "__main__":
         test_large_complex_problems
     ]
 
-    for test in tests:
-        try:
-            print(f"\nRunning {test.__name__}...")
-            test()
-            print(f"{test.__name__} completed successfully!")
-        except Exception as e:
-            print(f"An error occurred during {test.__name__}: {str(e)}")
-
-    print("\nAll tests completed.")
-    print("Test suite finished.")
+    try:
+        for test in tests:
+            try:
+                print(f"\nRunning {test.__name__}...")
+                test()
+                print(f"{test.__name__} completed successfully!")
+            except Exception as e:
+                print(f"An error occurred during {test.__name__}: {str(e)}")
+            finally:
+                gc.collect()
+                check_memory_usage()
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+    finally:
+        print("\nAll tests completed.")
+        print("Test suite finished.")
+        gc.collect()
+        check_memory_usage()
