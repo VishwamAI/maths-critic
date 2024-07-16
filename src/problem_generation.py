@@ -1,61 +1,65 @@
 import random
-import haiku as hk
-from nextgenjax.model import NextGenModel
+import jax
+import jax.numpy as jnp
+from nextgenjax.model import create_model
 
 def initialize_nextgenjax_model():
     """
-    Initialize and return the NextGenModel with predefined hyperparameters using hk.transform.
+    Initialize and return the NextGenJAX model with predefined hyperparameters.
     """
-    def _model_fn(dummy_input):
-        model = NextGenModel(num_layers=6, hidden_size=512, num_heads=8, dropout_rate=0.1)
-        return model(dummy_input)
+    return create_model(num_layers=6, hidden_size=512, num_heads=8, dropout_rate=0.1)
 
-    return hk.transform(_model_fn)
-
-model = initialize_nextgenjax_model()
-
-def generate_algebra_problem(params, rng_key):
+def encode_problem(problem: str) -> jnp.ndarray:
     """
-    Generates a simple algebraic problem of the form ax + b = c using NextGenModel.
+    Convert problem string to a numerical representation.
+    This is a placeholder implementation; adjust based on your specific encoding scheme.
+    """
+    return jnp.array([ord(c) for c in problem]).reshape(1, -1)
+
+def decode_solution(output: jnp.ndarray) -> str:
+    """
+    Convert model output to a solution string.
+    This is a placeholder implementation; adjust based on your specific decoding scheme.
+    """
+    return ''.join([chr(int(i)) for i in output.flatten()])
+
+def generate_algebra_problem(model, params, rng_key):
+    """
+    Generates a simple algebraic problem of the form ax + b = c using NextGenJAX model.
     Returns the problem as a string and the solution.
     """
-    a = random.randint(1, 10)
-    b = random.randint(1, 10)
-    c = random.randint(1, 10)
-
+    a, b, c = jax.random.randint(rng_key, (3,), 0, 10)
     problem = f"{a}x + {b} = {c}"
-    solution = model.apply(params, rng_key, problem, method=model.solve_algebra)
-
+    encoded_problem = encode_problem(problem)
+    output = model.apply(params, rng_key, encoded_problem)
+    solution = decode_solution(output)
     return problem, solution
 
-def generate_calculus_problem(params, rng_key):
+def generate_calculus_problem(model, params, rng_key):
     """
-    Generates a simple calculus problem of the form f(x) = integral(g(x)) using NextGenModel.
+    Generates a simple calculus problem of the form f(x) = integral(g(x)) using NextGenJAX model.
     Returns the problem as a string and the solution.
     """
-    a = random.randint(1, 10)
-    b = random.randint(1, 10)
-    c = random.randint(1, 10)
-
+    a, b, c = jax.random.randint(rng_key, (3,), 0, 10)
     g = f"{a}x^2 + {b}x + {c}"
     problem = f"f(x) = integral({g})"
-    solution = model.apply(params, rng_key, problem, method=model.solve_calculus)
-
+    encoded_problem = encode_problem(problem)
+    output = model.apply(params, rng_key, encoded_problem)
+    solution = decode_solution(output)
     return problem, solution
 
 if __name__ == "__main__":
-    import jax
-
-    rng_key = jax.random.PRNGKey(0)
-    dummy_input = "dummy input for initialization"
+    model = initialize_nextgenjax_model()
+    rng_key = jax.random.PRNGKey(42)
+    dummy_input = jnp.zeros((1, 128))  # Adjust size based on your model's input expectations
     params = model.init(rng_key, dummy_input)
 
     rng_key, subkey = jax.random.split(rng_key)
-    algebra_problem, algebra_solution = generate_algebra_problem(params, subkey)
+    algebra_problem, algebra_solution = generate_algebra_problem(model, params, subkey)
     print(f"Algebra Problem: {algebra_problem}")
     print(f"Algebra Solution: {algebra_solution}")
 
     rng_key, subkey = jax.random.split(rng_key)
-    calculus_problem, calculus_solution = generate_calculus_problem(params, subkey)
+    calculus_problem, calculus_solution = generate_calculus_problem(model, params, subkey)
     print(f"Calculus Problem: {calculus_problem}")
     print(f"Calculus Solution: {calculus_solution}")
