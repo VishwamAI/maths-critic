@@ -1,18 +1,18 @@
 import random
-from nextgenjax import NextGenJAX
+from nextgenjax.model import NextGenModel
 
 def initialize_nextgenjax_model():
     """
-    Initialize and return the NextGenJAX model.
+    Initialize and return the NextGenModel.
     """
-    # TODO: Replace with actual NextGenJAX initialization
-    return NextGenJAX()
+    # TODO: Replace with actual NextGenModel initialization
+    return NextGenModel()
 
 model = initialize_nextgenjax_model()
 
 def generate_algebra_problem():
     """
-    Generates a simple algebraic problem of the form ax + b = c using NextGenJAX.
+    Generates a simple algebraic problem of the form ax + b = c using NextGenModel.
     Returns the problem as a string and the solution.
     """
     a = random.randint(1, 10)
@@ -26,7 +26,7 @@ def generate_algebra_problem():
 
 def generate_calculus_problem():
     """
-    Generates a simple calculus problem of the form f(x) = integral(g(x)) using NextGenJAX.
+    Generates a simple calculus problem of the form f(x) = integral(g(x)) using NextGenModel.
     Returns the problem as a string and the solution.
     """
     a = random.randint(1, 10)
