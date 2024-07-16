@@ -3,10 +3,9 @@ from nextgenjax.model import NextGenModel
 
 def initialize_nextgenjax_model():
     """
-    Initialize and return the NextGenModel.
+    Initialize and return the NextGenModel with predefined hyperparameters.
     """
-    # TODO: Replace with actual NextGenModel initialization
-    return NextGenModel()
+    return NextGenModel(num_layers=6, hidden_size=512, num_heads=8, dropout_rate=0.1)
 
 model = initialize_nextgenjax_model()
 
