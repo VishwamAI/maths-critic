@@ -6,8 +6,9 @@ def initialize_nextgenjax_model():
     """
     Initialize and return the NextGenModel with predefined hyperparameters using hk.transform.
     """
-    def _model_fn():
-        return NextGenModel(num_layers=6, hidden_size=512, num_heads=8, dropout_rate=0.1)
+    def _model_fn(dummy_input):
+        model = NextGenModel(num_layers=6, hidden_size=512, num_heads=8, dropout_rate=0.1)
+        return model(dummy_input)
 
     return hk.transform(_model_fn)
 
