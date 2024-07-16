@@ -7,14 +7,16 @@ def initialize_nextgenjax_model():
     """
     Initialize and return the NextGenJAX model with predefined hyperparameters.
     """
-    return create_model(num_layers=6, hidden_size=512, num_heads=8, dropout_rate=0.1)
+    return create_model(num_layers=6, hidden_size=512, num_heads=10, dropout_rate=0.1)
 
 def encode_problem(problem: str) -> jnp.ndarray:
     """
     Convert problem string to a numerical representation.
-    This is a placeholder implementation; adjust based on your specific encoding scheme.
+    Ensures output shape is (1, 512) to match model expectations.
     """
-    return jnp.array([ord(c) for c in problem]).reshape(1, -1)
+    encoded = jnp.array([ord(c) for c in problem])
+    padded = jnp.pad(encoded, (0, max(0, 512 - len(encoded))))
+    return padded.reshape(1, 512)
 
 def decode_solution(output: jnp.ndarray) -> str:
     """
@@ -51,7 +53,7 @@ def generate_calculus_problem(model, params, rng_key):
 if __name__ == "__main__":
     model = initialize_nextgenjax_model()
     rng_key = jax.random.PRNGKey(42)
-    dummy_input = jnp.zeros((1, 128))  # Adjust size based on your model's input expectations
+    dummy_input = jnp.zeros((1, 512))  # Matches the model's input expectations
     params = model.init(rng_key, dummy_input)
 
     rng_key, subkey = jax.random.split(rng_key)
