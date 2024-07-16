@@ -7,7 +7,7 @@ def initialize_nextgenjax_model():
     """
     Initialize and return the NextGenJAX model with predefined hyperparameters.
     """
-    return create_model(num_layers=6, hidden_size=512, num_heads=10, dropout_rate=0.1)
+    return create_model(num_layers=6, hidden_size=512, num_heads=8, dropout_rate=0.1)
 
 def encode_problem(problem: str) -> jnp.ndarray:
     """
