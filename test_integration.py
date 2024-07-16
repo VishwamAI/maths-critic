@@ -4,24 +4,37 @@
 import sys
 sys.path.append('src')
 
+import jax
 import problem_generation
 
 def test_problem_generation():
     # Initialize the NextGenJAX model
-    problem_generation.initialize_nextgenjax_model()
+    model = problem_generation.initialize_nextgenjax_model()
+    rng_key = jax.random.PRNGKey(0)
+    dummy_input = "dummy input for initialization"
+    params = model.init(rng_key, dummy_input)
 
     # Generate a set of problems
-    problems = [problem_generation.generate_problem() for _ in range(10)]
+    problems = []
+    for _ in range(5):
+        rng_key, subkey1, subkey2 = jax.random.split(rng_key, 3)
+        algebra_problem, _ = problem_generation.generate_algebra_problem(params, subkey1)
+        calculus_problem, _ = problem_generation.generate_calculus_problem(params, subkey2)
+        problems.extend([algebra_problem, calculus_problem])
 
     # Check for any errors in the problems generated
     assert all(problem is not None for problem in problems), "Some problems were not generated correctly."
 
 def test_simple_arithmetic():
     # Initialize the NextGenJAX model
-    problem_generation.initialize_nextgenjax_model()
+    model = problem_generation.initialize_nextgenjax_model()
+    rng_key = jax.random.PRNGKey(0)
+    dummy_input = "dummy input for initialization"
+    params = model.init(rng_key, dummy_input)
 
     # Test the expression "2+2"
-    result = problem_generation.solve_problem("2+2")
+    rng_key, subkey = jax.random.split(rng_key)
+    result = model.apply(params, subkey, "2+2", method=model.solve_algebra)
 
     # Check if the output is "4"
     assert result == "4", f"Expected '4', but got '{result}'"
