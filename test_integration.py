@@ -107,6 +107,22 @@ def test_problem_generation():
 
     print("Problem generation test passed successfully!")
 
+def test_problem_generation_edge_cases():
+    model, params = initialize_nextgenjax_model()
+    rng_key = jax.random.PRNGKey(0)
+
+    # Test with empty input
+    empty_problem, empty_solution = problem_generation.generate_algebra_problem(model, params, rng_key, "")
+    assert empty_problem is None, f"Expected no problem to be generated for empty input, but got: {empty_problem}"
+    assert empty_solution is None, f"Expected no solution to be generated for empty input, but got: {empty_solution}"
+
+    # Test with invalid input
+    invalid_problem, invalid_solution = problem_generation.generate_algebra_problem(model, params, rng_key, "invalid input")
+    assert invalid_problem is None, f"Expected no problem to be generated for invalid input, but got: {invalid_problem}"
+    assert invalid_solution is None, f"Expected no solution to be generated for invalid input, but got: {invalid_solution}"
+
+    print("Edge case tests passed successfully!")
+
 if __name__ == "__main__":
     test_simple_arithmetic()
     test_complex_arithmetic()
@@ -115,4 +131,5 @@ if __name__ == "__main__":
     test_basic_differentiation()
     test_basic_integration()
     test_problem_generation()
+    test_problem_generation_edge_cases()
     print("All tests passed successfully!")
