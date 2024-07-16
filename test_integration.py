@@ -7,6 +7,8 @@ sys.path.append('src')
 import problem_generation
 import jax
 import jax.numpy
+import numpy as np
+from scipy import stats
 
 def initialize_nextgenjax_model():
     model = problem_generation.initialize_nextgenjax_model()
@@ -153,6 +155,38 @@ def test_advanced_math_problems():
 
     print("Advanced math problems test passed successfully!")
 
+def test_higher_order_differential_equations():
+    model, params = initialize_nextgenjax_model()
+    rng_key = jax.random.PRNGKey(0)
+    problem, solution = problem_generation.generate_higher_order_differential_equation(model, params, rng_key)
+    assert problem is not None, "Expected a higher-order differential equation problem to be generated, but got None"
+    assert solution is not None, "Expected a solution to be generated, but got None"
+    print("Higher-order differential equations test passed successfully!")
+
+def test_multivariable_calculus():
+    model, params = initialize_nextgenjax_model()
+    rng_key = jax.random.PRNGKey(0)
+    problem, solution = problem_generation.generate_multivariable_calculus_problem(model, params, rng_key)
+    assert problem is not None, "Expected a multivariable calculus problem to be generated, but got None"
+    assert solution is not None, "Expected a solution to be generated, but got None"
+    print("Multivariable calculus test passed successfully!")
+
+def test_advanced_statistics():
+    model, params = initialize_nextgenjax_model()
+    rng_key = jax.random.PRNGKey(0)
+    problem, solution = problem_generation.generate_advanced_statistics_problem(model, params, rng_key)
+    assert problem is not None, "Expected an advanced statistics problem to be generated, but got None"
+    assert solution is not None, "Expected a solution to be generated, but got None"
+    print("Advanced statistics test passed successfully!")
+
+def test_large_complex_problems():
+    model, params = initialize_nextgenjax_model()
+    rng_key = jax.random.PRNGKey(0)
+    problem, solution = problem_generation.generate_large_complex_problem(model, params, rng_key)
+    assert problem is not None, "Expected a large complex problem to be generated, but got None"
+    assert solution is not None, "Expected a solution to be generated, but got None"
+    print("Large complex problems test passed successfully!")
+
 if __name__ == "__main__":
     test_simple_arithmetic()
     test_complex_arithmetic()
@@ -164,4 +198,8 @@ if __name__ == "__main__":
     test_problem_generation_edge_cases()
     test_problem_generation_stress()
     test_advanced_math_problems()
+    test_higher_order_differential_equations()
+    test_multivariable_calculus()
+    test_advanced_statistics()
+    test_large_complex_problems()
     print("All tests passed successfully!")
