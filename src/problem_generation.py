@@ -21,9 +21,20 @@ def encode_problem(problem: str) -> jnp.ndarray:
 def decode_solution(output: jnp.ndarray) -> str:
     """
     Convert model output to a solution string.
-    This is a placeholder implementation; adjust based on your specific decoding scheme.
+    Handles potential errors and ensures only valid ASCII characters are used.
     """
-    return ''.join([chr(int(i)) for i in output.flatten()])
+    decoded = []
+    for i in output.flatten():
+        try:
+            code = int(i)
+            if 32 <= code <= 126:  # printable ASCII range
+                decoded.append(chr(code))
+            else:
+                decoded.append(' ')  # replace non-printable characters with space
+        except ValueError:
+            # If conversion to int fails, skip this value
+            continue
+    return ''.join(decoded).strip()
 
 def generate_algebra_problem(model, params, rng_key):
     """
