@@ -11,7 +11,7 @@ def test_problem_generation():
     # Initialize the NextGenJAX model
     model = problem_generation.initialize_nextgenjax_model()
     rng_key = jax.random.PRNGKey(0)
-    dummy_input = jax.numpy.zeros((1, 128))  # Adjust the shape as needed
+    dummy_input = jax.numpy.zeros((1, 512))  # Changed from (1, 128) to (1, 512)
     params = model.init(rng_key, dummy_input)
 
     # Generate a set of problems
@@ -29,12 +29,12 @@ def test_simple_arithmetic():
     # Initialize the NextGenJAX model
     model = problem_generation.initialize_nextgenjax_model()
     rng_key = jax.random.PRNGKey(0)
-    dummy_input = jax.numpy.zeros((1, 128))  # Adjust the shape as needed
+    dummy_input = jax.numpy.zeros((1, 512))  # Changed from (1, 128) to (1, 512)
     params = model.init(rng_key, dummy_input)
 
     # Test the expression "2+2"
     rng_key, subkey = jax.random.split(rng_key)
-    input_array = jax.numpy.array([[2, 2, 0, 0]])  # Simplified representation of "2+2"
+    input_array = jax.numpy.array([[2, 2] + [0] * 510])  # Padding with zeros to match (1, 512) shape
     result = model.apply(params, subkey, input_array, method=model.solve_algebra)
 
     # Check if the output is 4
