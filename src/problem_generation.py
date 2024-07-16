@@ -1,42 +1,163 @@
 import random
-import sympy as sp
+import jax
+import jax.numpy as jnp
+from nextgenjax.model import create_model
 
-def generate_algebra_problem():
+def initialize_nextgenjax_model():
     """
-    Generates a simple algebraic problem of the form ax + b = c.
-    Returns the problem as a string and the solution as a sympy expression.
+    Initialize and return the NextGenJAX model with predefined hyperparameters.
     """
-    a = random.randint(1, 10)
-    b = random.randint(1, 10)
-    c = random.randint(1, 10)
+    return create_model(num_layers=6, hidden_size=512, num_heads=8, dropout_rate=0.1)
 
-    x = sp.symbols('x')
-    problem = sp.Eq(a * x + b, c)
-    solution = sp.solve(problem, x)
+def encode_problem(problem: str) -> jnp.ndarray:
+    """
+    Convert problem string to a numerical representation.
+    Ensures output shape is (1, 512) to match model expectations.
+    """
+    encoded = jnp.array([ord(c) for c in problem])
+    padded = jnp.pad(encoded, (0, max(0, 512 - len(encoded))))
+    return padded.reshape(1, 512)
 
+def decode_solution(output: jnp.ndarray) -> str:
+    """
+    Convert model output to a solution string.
+    Handles potential errors and ensures only valid ASCII characters are used.
+    """
+    decoded = []
+    for i in output.flatten():
+        try:
+            code = int(i)
+            if 32 <= code <= 126:  # printable ASCII range
+                decoded.append(chr(code))
+            else:
+                decoded.append(' ')  # replace non-printable characters with space
+        except ValueError:
+            # If conversion to int fails, skip this value
+            continue
+    return ''.join(decoded).strip()
+
+def generate_algebra_problem(params, rng_key, expression=None):
+    """
+    Generates a simple algebraic problem of the form ax + b = c and solves it,
+    or uses a provided expression.
+    Returns the problem as a string and the solution.
+    """
+    if expression:
+        # Parse the expression and return it directly
+        return expression, eval(expression)
+
+    # Generate random coefficients
+    a, b, c = jax.random.randint(rng_key, (3,), 1, 10)  # Ensure 'a' is not zero
+    problem = f"{a}x + {b} = {c}"
+    # Solve the equation: ax + b = c
+    x = (c - b) / a
+    solution = f"x = {x:.2f}"
     return problem, solution
 
-def generate_calculus_problem():
+def generate_calculus_problem(model, params, rng_key):
     """
-    Generates a simple calculus problem of the form f(x) = integral(g(x)).
-    Returns the problem as a string and the solution as a sympy expression.
+    Generates a simple calculus problem of the form f(x) = integral(g(x)) using NextGenJAX model.
+    Returns the problem as a string and the solution.
     """
-    a = random.randint(1, 10)
-    b = random.randint(1, 10)
-    c = random.randint(1, 10)
+    rng_key, subkey = jax.random.split(rng_key)
+    a, b, c = jax.random.randint(subkey, (3,), 0, 10)
+    g = f"{a}x^2 + {b}x + {c}"
+    problem = f"f(x) = integral({g})"
+    encoded_problem = encode_problem(problem)
+    output = model.apply(params, rng_key, encoded_problem)
+    solution = decode_solution(output)
+    return problem, solution
 
-    x = sp.symbols('x')
-    g = a * x**2 + b * x + c
-    f = sp.integrate(g, x)
-    problem = sp.Eq(sp.Function('f')(x), f)
+def generate_complex_arithmetic_problem(model, params, rng_key):
+    """
+    Generates a complex arithmetic problem using NextGenJAX model.
+    Returns the problem as a string and the solution.
+    """
+    rng_key, subkey = jax.random.split(rng_key)
+    a, b, c = jax.random.randint(subkey, (3,), 0, 10)
+    problem = f"{a} * ({b} + {c}) / 2"
+    encoded_problem = encode_problem(problem)
+    output = model.apply(params, rng_key, encoded_problem)
+    solution = decode_solution(output)
+    return problem, solution
 
-    return problem, f
+def generate_basic_algebra_problem(model, params, rng_key):
+    """
+    Generates a basic algebra problem using NextGenJAX model.
+    Returns the problem as a string and the solution.
+    """
+    rng_key, subkey = jax.random.split(rng_key)
+    a, b = jax.random.randint(subkey, (2,), 1, 10)
+    c = jax.random.randint(subkey, (1,), 0, 50)[0]
+    problem = f"{a}x + {b} = {c}"
+    encoded_problem = encode_problem(problem)
+    output = model.apply(params, rng_key, encoded_problem)
+    solution = decode_solution(output)
+    return problem, solution
+
+def generate_quadratic_equation_problem(model, params, rng_key):
+    """
+    Generates a quadratic equation problem using NextGenJAX model.
+    Returns the problem as a string and the solution.
+    """
+    rng_key, subkey = jax.random.split(rng_key)
+    a, b, c = jax.random.randint(subkey, (3,), -5, 6)
+    while a == 0:  # Ensure 'a' is not zero
+        a = jax.random.randint(subkey, (1,), -5, 6)[0]
+    problem = f"{a}x^2 + {b}x + {c} = 0"
+    encoded_problem = encode_problem(problem)
+    output = model.apply(params, rng_key, encoded_problem)
+    solution = decode_solution(output)
+    return problem, solution
+
+def generate_basic_differentiation_problem(model, params, rng_key):
+    """
+    Generates a basic differentiation problem using NextGenJAX model.
+    Returns the problem as a string and the solution.
+    """
+    rng_key, subkey = jax.random.split(rng_key)
+    a, b, c = jax.random.randint(subkey, (3,), 0, 10)
+    problem = f"d/dx ({a}x^2 + {b}x + {c})"
+    encoded_problem = encode_problem(problem)
+    output = model.apply(params, rng_key, encoded_problem)
+    solution = decode_solution(output)
+    return problem, solution
+
+def generate_basic_integration_problem(model, params, rng_key):
+    """
+    Generates a basic integration problem using NextGenJAX model.
+    Returns the problem as a string and the solution.
+    """
+    rng_key, subkey = jax.random.split(rng_key)
+    a, b = jax.random.randint(subkey, (2,), 0, 10)
+    problem = f"integral({a}x + {b})"
+    encoded_problem = encode_problem(problem)
+    output = model.apply(params, rng_key, encoded_problem)
+    solution = decode_solution(output)
+    return problem, solution
 
 if __name__ == "__main__":
-    algebra_problem, algebra_solution = generate_algebra_problem()
+    model = initialize_nextgenjax_model()
+    rng_key = jax.random.PRNGKey(42)
+    dummy_input = jnp.zeros((1, 512))  # Matches the model's input expectations
+    params = model.init(rng_key, dummy_input)
+
+    rng_key, subkey = jax.random.split(rng_key)
+    algebra_problem, algebra_solution = generate_algebra_problem(params, subkey)
     print(f"Algebra Problem: {algebra_problem}")
     print(f"Algebra Solution: {algebra_solution}")
 
-    calculus_problem, calculus_solution = generate_calculus_problem()
+    rng_key, subkey = jax.random.split(rng_key)
+    calculus_problem, calculus_solution = generate_calculus_problem(model, params, subkey)
     print(f"Calculus Problem: {calculus_problem}")
     print(f"Calculus Solution: {calculus_solution}")
+
+    # Test new functions
+    for func in [generate_complex_arithmetic_problem, generate_basic_algebra_problem,
+                 generate_quadratic_equation_problem, generate_basic_differentiation_problem,
+                 generate_basic_integration_problem]:
+        rng_key, subkey = jax.random.split(rng_key)
+        problem, solution = func(model, params, subkey)
+        print(f"{func.__name__}:")
+        print(f"Problem: {problem}")
+        print(f"Solution: {solution}\n")
