@@ -63,7 +63,7 @@ def generate_calculus_problem(model, params, rng_key):
     g = f"{a}x^2 + {b}x + {c}"
     problem = f"f(x) = integral({g})"
     encoded_problem = encode_problem(problem)
-    output = model.apply(params, rng_key, encoded_problem)
+    output = model.apply(params, encoded_problem, rngs={'dropout': rng_key})
     solution = decode_solution(output)
     return problem, solution
 
