@@ -25,7 +25,7 @@ def test_simple_arithmetic():
     assert problem == "2+2", f"Expected problem '2+2', but got '{problem}'"
 
     # Check if the solution is correct
-    assert solution == "4", f"Expected solution '4', but got '{solution}'"
+    assert str(solution) == "4", f"Expected solution '4', but got '{solution}'"
 
     print("Simple arithmetic test passed successfully!")
 
