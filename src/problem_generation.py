@@ -36,11 +36,17 @@ def decode_solution(output: jnp.ndarray) -> str:
             continue
     return ''.join(decoded).strip()
 
-def generate_algebra_problem(model, params, rng_key):
+def generate_algebra_problem(params, rng_key, expression=None):
     """
-    Generates a simple algebraic problem of the form ax + b = c and solves it.
+    Generates a simple algebraic problem of the form ax + b = c and solves it,
+    or uses a provided expression.
     Returns the problem as a string and the solution.
     """
+    if expression:
+        # Parse the expression and return it directly
+        return expression, eval(expression)
+
+    # Generate random coefficients
     a, b, c = jax.random.randint(rng_key, (3,), 1, 10)  # Ensure 'a' is not zero
     problem = f"{a}x + {b} = {c}"
     # Solve the equation: ax + b = c
@@ -68,7 +74,7 @@ if __name__ == "__main__":
     params = model.init(rng_key, dummy_input)
 
     rng_key, subkey = jax.random.split(rng_key)
-    algebra_problem, algebra_solution = generate_algebra_problem(model, params, subkey)
+    algebra_problem, algebra_solution = generate_algebra_problem(params, subkey)
     print(f"Algebra Problem: {algebra_problem}")
     print(f"Algebra Solution: {algebra_solution}")
 
