@@ -59,11 +59,12 @@ def generate_calculus_problem(model, params, rng_key):
     Generates a simple calculus problem of the form f(x) = integral(g(x)) using NextGenJAX model.
     Returns the problem as a string and the solution.
     """
-    a, b, c = jax.random.randint(rng_key, (3,), 0, 10)
+    rng_key, subkey = jax.random.split(rng_key)
+    a, b, c = jax.random.randint(subkey, (3,), 0, 10)
     g = f"{a}x^2 + {b}x + {c}"
     problem = f"f(x) = integral({g})"
     encoded_problem = encode_problem(problem)
-    output = model.apply(params, encoded_problem, rngs={'dropout': rng_key})
+    output = model.apply(params, rng_key, encoded_problem)
     solution = decode_solution(output)
     return problem, solution
 
