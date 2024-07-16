@@ -11,7 +11,7 @@ def test_problem_generation():
     # Initialize the NextGenJAX model
     model = problem_generation.initialize_nextgenjax_model()
     rng_key = jax.random.PRNGKey(0)
-    dummy_input = "dummy input for initialization"
+    dummy_input = jax.numpy.zeros((1, 128))  # Adjust the shape as needed
     params = model.init(rng_key, dummy_input)
 
     # Generate a set of problems
@@ -29,15 +29,16 @@ def test_simple_arithmetic():
     # Initialize the NextGenJAX model
     model = problem_generation.initialize_nextgenjax_model()
     rng_key = jax.random.PRNGKey(0)
-    dummy_input = "dummy input for initialization"
+    dummy_input = jax.numpy.zeros((1, 128))  # Adjust the shape as needed
     params = model.init(rng_key, dummy_input)
 
     # Test the expression "2+2"
     rng_key, subkey = jax.random.split(rng_key)
-    result = model.apply(params, subkey, "2+2", method=model.solve_algebra)
+    input_array = jax.numpy.array([[2, 2, 0, 0]])  # Simplified representation of "2+2"
+    result = model.apply(params, subkey, input_array, method=model.solve_algebra)
 
-    # Check if the output is "4"
-    assert result == "4", f"Expected '4', but got '{result}'"
+    # Check if the output is 4
+    assert jax.numpy.allclose(result, jax.numpy.array([4])), f"Expected [4], but got {result}"
 
 if __name__ == "__main__":
     test_problem_generation()
