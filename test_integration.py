@@ -123,6 +123,36 @@ def test_problem_generation_edge_cases():
 
     print("Edge case tests passed successfully!")
 
+# Add stress test function for problem generation
+def test_problem_generation_stress():
+    model, params = initialize_nextgenjax_model()
+    rng_key = jax.random.PRNGKey(0)
+
+    # Generate a large number of problems to test stability and performance
+    for _ in range(1000):
+        problem, solution = problem_generation.generate_algebra_problem(model, params, rng_key, "2*x + 3 = 15")
+        assert problem is not None, "Expected a problem to be generated, but got None"
+        assert solution is not None, "Expected a solution to be generated, but got None"
+
+    print("Stress test passed successfully!")
+
+# Add new test function for advanced mathematical domains
+def test_advanced_math_problems():
+    model, params = initialize_nextgenjax_model()
+    rng_key = jax.random.PRNGKey(0)
+
+    # Test advanced algebra problem
+    advanced_algebra_problem, advanced_algebra_solution = problem_generation.generate_advanced_algebra_problem(model, params, rng_key, "solve for x: x^2 + 4*x - 5 = 0")
+    assert advanced_algebra_problem is not None, "Expected an advanced algebra problem to be generated, but got None"
+    assert advanced_algebra_solution is not None, "Expected an advanced algebra solution to be generated, but got None"
+
+    # Test advanced calculus problem
+    advanced_calculus_problem, advanced_calculus_solution = problem_generation.generate_advanced_calculus_problem(model, params, rng_key, "integrate: sin(x) dx from 0 to pi")
+    assert advanced_calculus_problem is not None, "Expected an advanced calculus problem to be generated, but got None"
+    assert advanced_calculus_solution is not None, "Expected an advanced calculus solution to be generated, but got None"
+
+    print("Advanced math problems test passed successfully!")
+
 if __name__ == "__main__":
     test_simple_arithmetic()
     test_complex_arithmetic()
@@ -132,4 +162,6 @@ if __name__ == "__main__":
     test_basic_integration()
     test_problem_generation()
     test_problem_generation_edge_cases()
+    test_problem_generation_stress()
+    test_advanced_math_problems()
     print("All tests passed successfully!")
