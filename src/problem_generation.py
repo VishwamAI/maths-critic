@@ -38,14 +38,14 @@ def decode_solution(output: jnp.ndarray) -> str:
 
 def generate_algebra_problem(model, params, rng_key):
     """
-    Generates a simple algebraic problem of the form ax + b = c using NextGenJAX model.
+    Generates a simple algebraic problem of the form ax + b = c and solves it.
     Returns the problem as a string and the solution.
     """
-    a, b, c = jax.random.randint(rng_key, (3,), 0, 10)
+    a, b, c = jax.random.randint(rng_key, (3,), 1, 10)  # Ensure 'a' is not zero
     problem = f"{a}x + {b} = {c}"
-    encoded_problem = encode_problem(problem)
-    output = model.apply(params, rng_key, encoded_problem)
-    solution = decode_solution(output)
+    # Solve the equation: ax + b = c
+    x = (c - b) / a
+    solution = f"x = {x:.2f}"
     return problem, solution
 
 def generate_calculus_problem(model, params, rng_key):
