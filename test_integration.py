@@ -42,7 +42,7 @@ def test_problem_generation():
     for _ in range(5):
         rng_key, subkey1, subkey2 = jax.random.split(rng_key, 3)
         algebra_problem, algebra_solution = problem_generation.generate_algebra_problem(params, subkey1)
-        calculus_problem, calculus_solution = problem_generation.generate_calculus_problem(params, subkey2)
+        calculus_problem, calculus_solution = problem_generation.generate_calculus_problem(params, subkey2, rng_key)
         problems.extend([algebra_problem, calculus_problem])
         solutions.extend([algebra_solution, calculus_solution])
 
