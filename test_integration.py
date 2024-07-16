@@ -18,8 +18,8 @@ def test_problem_generation():
     problems = []
     for _ in range(5):
         rng_key, subkey1, subkey2 = jax.random.split(rng_key, 3)
-        algebra_problem, _ = problem_generation.generate_algebra_problem(params, subkey1)
-        calculus_problem, _ = problem_generation.generate_calculus_problem(params, subkey2)
+        algebra_problem, _ = problem_generation.generate_algebra_problem(model, params, subkey1)
+        calculus_problem, _ = problem_generation.generate_calculus_problem(model, params, subkey2)
         problems.extend([algebra_problem, calculus_problem])
 
     # Check for any errors in the problems generated
